@@ -50,6 +50,11 @@ module.exports = function (opts) {
     'opts.domain or FH_MILLICORE env var must be a string'
   );
 
+  // Get a logger with the package name and target guid
+  var log = require('fh-bunyan')
+    .getLogger(require('./package.json').name + '-' + opts.guid);
+
+
   var proxy = httpProxy.createProxyServer({
     // We need to add in service call headers to ensure the request is not
     // rejected. We also add in custom headers if the dev would like to
@@ -59,6 +64,11 @@ module.exports = function (opts) {
     )
   });
 
+  log.info(
+    'created proxy to target service %s on domain %s',
+    opts.guid,
+    opts.domain
+  );
 
   /**
    * Store the service url in a local var and set a timer to invalidate it.
@@ -67,11 +77,16 @@ module.exports = function (opts) {
    * @return {undefined}
    */
   function cacheServiceUrl (url, callback) {
+    var cacheMs = opts.urlCacheTimeout || DEFAULT_CACHE_TIMEOUT;
+
+    log.info('caching url %s for %sms', url, cacheMs);
+
     serviceUrl = url;
 
     setTimeout(function invalidateCachedUrl () {
+      log.info('url %s cache expired', serviceUrl);
       serviceUrl = null;
-    }, opts.urlCacheTimeout || DEFAULT_CACHE_TIMEOUT);
+    }, cacheMs);
 
     callback(null, url);
   }
@@ -86,6 +101,12 @@ module.exports = function (opts) {
     if (serviceUrl) {
       callback(null, serviceUrl);
     } else {
+      log.info(
+        'requesting service url for %s on domain %s',
+        opts.guid,
+        opts.domain
+      );
+
       fhurl.getServiceUrl({
         guid: opts.guid,
         domain: opts.domain
@@ -96,6 +117,11 @@ module.exports = function (opts) {
             null
           );
         } else {
+          log.info(
+            'successfully retrieved url for %s on %s',
+            opts.guid,
+            opts.domain
+          );
           cacheServiceUrl(url, callback);
         }
       });
@@ -111,16 +137,20 @@ module.exports = function (opts) {
    * @return {undefined}
    */
   return function fhMbaasProxyMiddleware (req, res, next) {
+    log.debug('received request for %s', req.url);
+
     getServiceUrl(function onServiceUrl (err, url) {
       if (err) {
         next(
           new VError(
             err,
-            'failed to proxy req to service %s',
-            opts.guid
+            'failed to proxy req to service %s on %s',
+            opts.guid,
+            opts.domain
           )
         );
       } else {
+        log.debug('proxy request to %s', req.url);
         proxy.web(req, res, {
           target: url
         });

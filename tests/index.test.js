@@ -2,7 +2,6 @@
 
 var test = require('ava')
   , sinon = require('sinon')
-  , expect = require('chai').expect
   , proxyquire = require('proxyquire');
 
 var stubs = {
@@ -80,8 +79,8 @@ test.cb('should fail to proxy due to failure getting service url', function (t) 
   }, {}, function (err) {
     t.is(
       err.toString(),
-      'VError: failed to proxy req to service 562etdecvqqgskbngvfdrj2kn: ' +
-        'failed to get service url: dummy error'
+      'VError: failed to proxy req to service 562etdecvqqgskbngvfdrj2kn on ' +
+      'some.domain.com: failed to get service url: dummy error'
     );
 
     t.end();
@@ -89,38 +88,6 @@ test.cb('should fail to proxy due to failure getting service url', function (t) 
 });
 
 test.cb('should return the service url and attempt to proxy', function (t) {
-  var proxyStub = {
-    web: sinon.spy()
-  };
-
-  var targetUrl = 'https://some-url.com';
-
-  stubs['http-proxy'].createProxyServer.returns(proxyStub);
-  stubs['fh-instance-url'].getServiceUrl.yields(null, targetUrl);
-
-  var inst = adapter({
-    guid: GUID,
-    domain: DOMAIN
-  });
-
-  var req = {
-    url: '/path'
-  };
-
-  var res = {send: function () {}};
-
-  // Mimic a middleware call
-  inst(req, res);
-
-  t.is(proxyStub.web.called, true);
-  t.is(proxyStub.web.getCall(0).args[0], req);
-  t.is(proxyStub.web.getCall(0).args[1], res);
-  t.is(proxyStub.web.getCall(0).args[2].target, targetUrl);
-
-  t.end();
-});
-
-test.cb('should use cached service url and attempt to proxy', function (t) {
   var proxyStub = {
     web: sinon.spy()
   };
