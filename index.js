@@ -50,6 +50,31 @@ module.exports = function (opts) {
     'opts.domain or FH_MILLICORE env var must be a string'
   );
 
+  if (opts.trim) {
+    assert.equal(
+      typeof opts.trim,
+      'string',
+      'opts.trim must be a string'
+    );
+
+    assert(
+      opts.trim.length > 1,
+      'opts.trim must be a string with length above 1'
+    );
+
+    assert.equal(
+      opts.trim[0],
+      '/',
+      'opts.trim must be a valid path with leading slash, e.g "/stuff"'
+    );
+
+    assert.notEqual(
+      opts.trim[opts.trim.length - 1],
+      '/',
+      'opts.trim must not end with a "/"'
+    );
+  }
+
   // Get a logger with the package name and target guid
   var log = require('fh-bunyan')
     .getLogger(require('./package.json').name + '-' + opts.guid);
@@ -150,7 +175,15 @@ module.exports = function (opts) {
           )
         );
       } else {
-        log.debug('proxy request to %s', req.url);
+        var originalPath = req.url;
+
+        // Update the request url to no longer contain the specified path
+        if (opts.trim && req.url.indexOf(opts.trim) === 0) {
+          req.url = req.url.replace(opts.trim, '');
+        }
+
+        log.debug('proxying request for %s to %s', originalPath, req.url);
+
         proxy.web(req, res, {
           target: url
         });
