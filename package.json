@@ -1,0 +1,19 @@
+{
+  "name": "fh-mbaas-proxy",
+  "version": "0.1.0",
+  "description": "Creates an express middleware to enabl proxying of Cloud calls to an MBaaS Service",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha tests/"
+  },
+  "author": "Evan Shortiss",
+  "license": "MIT",
+  "dependencies": {
+    "env-var": "^1.0.0",
+    "fh-instance-url": "^0.3.0",
+    "http-proxy": "^1.13.2",
+    "lodash.get": "^4.2.1",
+    "verror": "^1.6.1",
+    "xtend": "^4.0.1"
+  }
+}
