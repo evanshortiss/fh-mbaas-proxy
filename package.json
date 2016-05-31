@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "unit": "env NODE_PATH=. ava tests/ -t | tap-spec",
-    "report": "nyc npm run unit && nyc report --reporter=html"
+    "report": "nyc npm run unit && nyc report --reporter=html",
+    "lint": "linelint index.js && jshint index.js",
+    "test": "npm run lint && npm run unit"
   },
   "author": "Evan Shortiss",
   "license": "MIT",
@@ -20,6 +22,8 @@
   "devDependencies": {
     "ava": "^0.15.1",
     "chai": "^3.5.0",
+    "jshint": "^2.9.2",
+    "linelint": "^1.0.0",
     "nyc": "^6.4.4",
     "proxyquire": "^1.7.9",
     "sinon": "^1.17.4",

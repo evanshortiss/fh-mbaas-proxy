@@ -121,7 +121,6 @@ module.exports = function (opts) {
           )
         );
       } else {
-        console.log('proxy with url', url)
         proxy.web(req, res, {
           target: url
         });
