@@ -27,6 +27,12 @@ module.exports = function (opts) {
     'an options object should be passed to fh-mbaas-proxy calls'
   );
 
+  // Cannot be empty string/falsey value
+  assert(
+    opts.guid,
+    'opts.guid is a required parameter and should be the service guid/id'
+  );
+
   // Need to know the domain the request is made to. RHMAP has a variable
   // present for this, but allow override if necessary
   opts.domain = opts.domain || env('FH_MILLICORE');
@@ -38,10 +44,10 @@ module.exports = function (opts) {
     'service is hosted on, e.g your-domain'
   );
 
-  // Cannot be empty string/falsey value
-  assert(
-    opts.guid,
-    'opts.guid is a required parameter and should be the service guid/id'
+  assert.equal(
+    typeof opts.domain,
+    'string',
+    'opts.domain or FH_MILLICORE env var must be a string'
   );
 
   var proxy = httpProxy.createProxyServer({
@@ -80,7 +86,7 @@ module.exports = function (opts) {
     if (serviceUrl) {
       callback(null, serviceUrl);
     } else {
-      fhurl({
+      fhurl.getServiceUrl({
         guid: opts.guid,
         domain: opts.domain
       }, function (err, url) {
@@ -111,10 +117,11 @@ module.exports = function (opts) {
           new VError(
             err,
             'failed to proxy req to service %s',
-            opts.service.guid
+            opts.guid
           )
         );
       } else {
+        console.log('proxy with url', url)
         proxy.web(req, res, {
           target: url
         });
