@@ -7,7 +7,7 @@ var test = require('ava')
 var stubs = {
   'env-var': sinon.stub(),
   'fh-instance-url': {
-    getServiceUrl: sinon.stub(),
+    getUrl: sinon.stub(),
     getServiceCallHeaders: sinon.stub()
   },
   'http-proxy': {
@@ -71,7 +71,7 @@ test.cb('should fail to proxy due to failure getting service url', function (t) 
     domain: DOMAIN
   });
 
-  stubs['fh-instance-url'].getServiceUrl.yields(new Error('dummy error'));
+  stubs['fh-instance-url'].getUrl.yields(new Error('dummy error'));
 
   // Mimic a middleware call
   inst({
@@ -95,7 +95,7 @@ test.cb('should return the service url and attempt to proxy', function (t) {
   var targetUrl = 'https://some-url.com';
 
   stubs['http-proxy'].createProxyServer.returns(proxyStub);
-  stubs['fh-instance-url'].getServiceUrl.yields(null, targetUrl);
+  stubs['fh-instance-url'].getUrl.yields(null, targetUrl);
 
   var inst = adapter({
     guid: GUID,

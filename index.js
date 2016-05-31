@@ -107,7 +107,7 @@ module.exports = function (opts) {
         opts.domain
       );
 
-      fhurl.getServiceUrl({
+      fhurl.getUrl({
         guid: opts.guid,
         domain: opts.domain
       }, function (err, url) {
