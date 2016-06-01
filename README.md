@@ -3,10 +3,13 @@ fh-mbaas-proxy
 
  [![Circle CI](https://circleci.com/gh/evanshortiss/fh-mbaas-proxy/tree/master.svg?style=svg)](https://circleci.com/gh/evanshortiss/fh-mbaas-proxy/tree/master)
 
-One of the most useful features of the Red Hat Mobile Application Platform is
-mBaaS Services. These services enable developers to expose reusable RESTful
-APIs that can be used by multiple projects. One drawback of this however is
-that code duplication can occur in the dependent cloud applications.
+MBaaS Services are one of the most useful features of the Red Hat Mobile
+Application Platform. These services enable developers to expose reusable
+RESTful APIs (or anything else that you can serve over HTTP!) that can be used
+by multiple projects. One drawback of this however is that code duplication
+can occur in the dependent cloud applications since you might find the need to
+call the same endpoints in each using $fh.service, and return those results
+to a Client Application.
 
 _fh-mbaas-proxy_ aims to resolve this duplication by serving as an express
 middleware that can be added to any Cloud Application to expose service routes
@@ -24,7 +27,9 @@ npm install evanshortiss/fh-mbaas-proxy --save
 ### express.static
 In node.js version v0.10 this middleware must be placed **before**
 _express.static_. If not placed before _express.static_ requests will fail to
-proxy. This is not an issue in node.js v4. We have not confirmed other middlewares causing issues, but if you suspect that is the case then try placing them **after** this middleware.
+proxy. This is not an issue in node.js v4. We have not confirmed other
+middleware causing issues, but if you suspect that is the case then try
+placing them **after** this middleware.
 
 
 ```js
