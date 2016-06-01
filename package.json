@@ -1,7 +1,7 @@
 {
   "name": "fh-mbaas-proxy",
   "version": "0.1.0",
-  "description": "Creates an express middleware to enabl proxying of Cloud calls to an MBaaS Service",
+  "description": "Creates an express middleware to enable proxying of Cloud calls to an MBaaS Service",
   "main": "index.js",
   "scripts": {
     "unit": "env NODE_PATH=. ava tests/",
@@ -11,6 +11,7 @@
   },
   "author": "Evan Shortiss",
   "license": "MIT",
+  "repository": "evanshortiss/fh-mbaas-proxy",
   "dependencies": {
     "env-var": "^1.0.0",
     "fh-bunyan": "^0.1.3",
