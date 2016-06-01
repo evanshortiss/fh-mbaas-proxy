@@ -24,13 +24,13 @@ npm install evanshortiss/fh-mbaas-proxy --save
 
 ## Known Issues
 
-### express.static
-In node.js version v0.10 this middleware must be placed **before**
-_express.static_. If not placed before _express.static_ requests will fail to
-proxy. This is not an issue in node.js v4. We have not confirmed other
-middleware causing issues, but if you suspect that is the case then try
-placing them **after** this middleware.
-
+### Express Middleware
+Placing the proxy after certain express middleware can cause the proxied
+request to timeout or receive an ECONNRESET error. Currently it appears that
+placing it after _cors_, _express.static_, or _fhmiddleware_ can cause this
+issue. You can work around this by structuring routes with nesting, or by
+ensuring the proxy is included before such middleware until the reason for
+this issue is discovered.
 
 ```js
 /*
@@ -45,7 +45,7 @@ app.use(express.static(__dirname + '/public'));
 /*
   filename: this-does-not-work.js
 
-  This won't proxy, but will throw an error!
+  This won't proxy, will timeout or throw an error instead!
  */
 app.use(express.static(__dirname + '/public'));
 app.use(require('fh-mbaas-proxy')(proxyOptions));
@@ -63,11 +63,7 @@ var port = process.env.FH_PORT || process.env.VCAP_APP_PORT || 8004;
 // RHMAP routes and config
 app.use('/sys', mbaasExpress.sys([]));
 app.use('/mbaas', mbaasExpress.mbaas);
-app.use(mbaasExpress.fhmiddleware());
 
-app.get('/ping', function (req, res) {
-  res.end('pong');
-});
 
 // Creates a middleware that will forward all requests to a service specified
 // by the AUTH_SERVICE_GUID environment variable
@@ -82,6 +78,12 @@ var parentProxy = serviceProxy({
 
 // Forward all requests that lead with '/parent', e.g '/parent/child'
 app.use('/parent', parentProxy);
+
+app.use(mbaasExpress.fhmiddleware());
+
+app.get('/ping', function (req, res) {
+  res.end('pong');
+});
 
 app.use(mbaasExpress.errorHandler());
 
