@@ -79,6 +79,7 @@ module.exports = function (opts) {
   var log = require('fh-bunyan')
     .getLogger(require('./package.json').name + '-' + opts.guid);
 
+  log.info('creating proxy with opts, %j', opts);
 
   var proxy = httpProxy.createProxyServer({
     // We need to add in service call headers to ensure the request is not
@@ -196,7 +197,10 @@ module.exports = function (opts) {
         );
 
         proxy.web(req, res, {
-          target: url
+          target: url,
+          // Required to ensure requests get routed through
+          // fh correctly, otherwise they come back to this service
+          changeOrigin: true
         });
       }
     });
