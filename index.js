@@ -175,14 +175,25 @@ module.exports = function (opts) {
           )
         );
       } else {
-        var originalPath = req.url;
+        var originalUrl = req.originalUrl;
 
-        // Update the request url to no longer contain the specified path
-        if (opts.trim && req.url.indexOf(opts.trim) === 0) {
-          req.url = req.url.replace(opts.trim, '');
+        // Trim behaviour uses: req.url, req.originalUrl, req.baseUrl
+        // e.g /things/car
+        // req.url = '/car'
+        // req.originalUrl = '/things/car'
+        // req.baseUrl = '/things'
+
+        if (opts.noTrim === true) {
+          // Use the full URL, e.g /things/car
+          req.url = req.originalUrl;
         }
 
-        log.debug('proxying request for %s to %s', originalPath, req.url);
+        log.debug(
+          'proxying request for %s to %s%s',
+          originalUrl,
+          url,
+          req.url
+        );
 
         proxy.web(req, res, {
           target: url

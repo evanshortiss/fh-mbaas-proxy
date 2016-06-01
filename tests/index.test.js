@@ -182,7 +182,7 @@ test.cb('should proxy with trimmed url', function (t) {
   var inst = adapter({
     guid: GUID,
     domain: DOMAIN,
-    trim: '/path'
+    noTrim: false
   });
 
   var req = {
@@ -202,37 +202,37 @@ test.cb('should proxy with trimmed url', function (t) {
 
   t.end();
 });
-
-test.cb('should proxy with provided url - no trim match', function (t) {
-  var proxyStub = {
-    web: sinon.spy()
-  };
-
-  var targetUrl = 'https://some-url.com';
-
-  stubs['http-proxy'].createProxyServer.returns(proxyStub);
-  stubs['fh-instance-url'].getUrl.yields(null, targetUrl);
-
-  var inst = adapter({
-    guid: GUID,
-    domain: DOMAIN,
-    trim: '/tostuff'
-  });
-
-  var req = {
-    url: '/path/tostuff'
-  };
-
-  var res = {send: function () {}};
-
-  // Mimic a middleware call
-  inst(req, res);
-
-  t.is(proxyStub.web.called, true);
-  t.is(proxyStub.web.getCall(0).args[0], req);
-  t.is(proxyStub.web.getCall(0).args[0].url, '/path/tostuff');
-  t.is(proxyStub.web.getCall(0).args[1], res);
-  t.is(proxyStub.web.getCall(0).args[2].target, targetUrl);
-
-  t.end();
-});
+//
+// test.cb('should proxy with provided url - noTrim match', function (t) {
+//   var proxyStub = {
+//     web: sinon.spy()
+//   };
+//
+//   var targetUrl = 'https://some-url.com';
+//
+//   stubs['http-proxy'].createProxyServer.returns(proxyStub);
+//   stubs['fh-instance-url'].getUrl.yields(null, targetUrl);
+//
+//   var inst = adapter({
+//     guid: GUID,
+//     domain: DOMAIN,
+//     trim: '/tostuff'
+//   });
+//
+//   var req = {
+//     url: '/path/tostuff'
+//   };
+//
+//   var res = {send: function () {}};
+//
+//   // Mimic a middleware call
+//   inst(req, res);
+//
+//   t.is(proxyStub.web.called, true);
+//   t.is(proxyStub.web.getCall(0).args[0], req);
+//   t.is(proxyStub.web.getCall(0).args[0].url, '/path/tostuff');
+//   t.is(proxyStub.web.getCall(0).args[1], res);
+//   t.is(proxyStub.web.getCall(0).args[2].target, targetUrl);
+//
+//   t.end();
+// });

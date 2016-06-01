@@ -72,28 +72,15 @@ app.get('/ping', function (req, res) {
 // Creates a middleware that will forward all requests to a service specified
 // by the AUTH_SERVICE_GUID environment variable
 var parentProxy = serviceProxy({
-  // Optional headers to inject into the forwarded request, if the header
-  // already exists in the incoming request then it will be overwritten
   headers: {
-    'x-custom-header': 'some value'
+    'x-custom-header': 'some-header-value'
   },
-
-  // The guid of the target service for proxying
-  guid: process.env.AUTH_SERVICE_GUID,
-
-  // The domain you're working with. This is only required if FH_MILLICORE
-  // environment variable is not set. It will always be set when running on
-  // the platform, but your local development environment is beyond our control
+  guid: process.env.SERVICE_GUID,
   domain: 'somedomain.feedhenry.com',
-
-  // Trimming enables you to mount a proxy under a subpath to avoid route
-  // conflicts, but then remove the subpath when the request os forwarded
-  // to the MBaaS Service, e.g opts.trim="/parent" and the incoming request is
-  // "/parent/child" then it would be sent to an MBaaS Service as just "/child"
-  trim: '/parent'
+  noTrim: false
 });
 
-// Forward all requests that lead with '/auth'
+// Forward all requests that lead with '/parent', e.g '/parent/child'
 app.use('/parent', parentProxy);
 
 app.use(mbaasExpress.errorHandler());
@@ -128,34 +115,24 @@ command in a terminal, thus removing the need to provide this option. Awesome!
 export FH_MILLICORE='your-domain.feedhenry.com'
 ```
 
-### opts.trim (Optional)
-Trimming enables you to mount a proxy under a subpath to avoid route conflicts,
-but then remove the subpath when the request os forwarded to the MBaaS Service.
-For example opts.trim is set to "/parent" and the incoming request is
-"/parent/child" then it would be sent to an MBaaS Service as just "/child".
+### opts.noTrim (Default - false)
+Setting _noTrim_ to true will use the full path for proxying, e.g if your proxy
+setup is like so:
 
-Here's a simple full URL example:
+```js
+app.use('/parent', serviceProxy(options));
+```
+
+Then a client might call "/parent/child". By default we remove the "/parent"
+when performing the proxy. Here's a simple full URL example of what this means:
 
 ```bash
 http://cloud.fh-app.com/parent/child => http://service.fh-app.com/child
 ```
 
-And how it would look in code:
+If you didn't want "/parent" getting removed then you can pass _noTrim_ with
+the value, _true_ and the URL mapping will become as follows:
 
-```js
-var proxy = require('fh-mbaas-proxy')({
-  guid: process.env.PROXY_GUID,
-  trim: '/parent'
-});
-
-app.use('/parent', proxy);
+```bash
+http://cloud.fh-app.com/parent/child => http://service.fh-app.com/parent/child
 ```
-
-It's worth noting that the _trim_ options must meet the following criteria:
-
-* Is of type String
-* Has a leading slash, e.g "/ok" is valid but "ok" is not.
-* Does not containg a trailing slash, e.g "/ok" is valid but "/ok/" is not.
-* Matches the root of the URL. In our example above, if the URL became,
-"child/parent", then the URL would not change to "/child" since parent is not
-the root.
