@@ -24,28 +24,42 @@ npm install evanshortiss/fh-mbaas-proxy --save
 
 ## Known Issues
 
-### Express Middleware
+### Express. Middleware
 Placing the proxy after certain express middleware can cause the proxied
 request to timeout or receive an ECONNRESET error. Currently it appears that
-placing it after _cors_, _express.static_, or _fhmiddleware_ can cause this
-issue. You can work around this by structuring routes with nesting, or by
-ensuring the proxy is included before such middleware until the reason for
-this issue is discovered.
+placing it after _express.static_ can cause this issue. Other middleware might
+also cause this issue, but only _express.static_ is confirmed.
+
+You can work around this by structuring routes with nesting, or by ensuring
+the proxy is included before such middleware until the reason for this issue
+is discovered.
 
 ```js
 /*
   filename: this-works.js
 
-  This will proxy!
+  This will proxy since the proxy middleware is before the static middleware.
  */
 app.use(require('fh-mbaas-proxy')(proxyOptions));
 app.use(express.static(__dirname + '/public'));
+
+/*
+  filename: this-also-works.js
+
+  This will proxy so long as the route to be proxied does not begin with
+  the path "/static" since it will then avoid the static middleware. For
+  example "/ok/static" will work, but "/static/ok" will fail to proxy since
+  it must pass thru the express.static middleware first
+ */
+app.use('/static', express.static(__dirname + '/public'));
+app.use(require('fh-mbaas-proxy')(proxyOptions));
 
 
 /*
   filename: this-does-not-work.js
 
-  This won't proxy, will timeout or throw an error instead!
+  This won't proxy because the static middleware is run for EVERY incoming
+  request BEFORE it reaches the proxy middleware.
  */
 app.use(express.static(__dirname + '/public'));
 app.use(require('fh-mbaas-proxy')(proxyOptions));
