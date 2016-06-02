@@ -17,9 +17,9 @@ as if they were part of it. Less time writing calls to _$fh.service_ means more
 time getting features done, and less bugs!
 
 ## Install
-Not published to npm yet, but can be installed via
+
 ```
-npm install evanshortiss/fh-mbaas-proxy --save
+npm install fh-mbaas-proxy --save
 ```
 
 ## Known Issues
