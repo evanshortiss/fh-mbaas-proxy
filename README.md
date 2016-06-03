@@ -24,7 +24,7 @@ npm install fh-mbaas-proxy --save
 
 ## Known Issues
 
-### Express. Middleware
+### Express Middleware
 Placing the proxy after certain express middleware can cause the proxied
 request to timeout or receive an ECONNRESET error. Currently it appears that
 placing it after _express.static_ can cause this issue. Other middleware might
