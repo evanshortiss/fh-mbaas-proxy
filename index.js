@@ -50,30 +50,6 @@ module.exports = function (opts) {
     'opts.domain or FH_MILLICORE env var must be a string'
   );
 
-  if (opts.trim) {
-    assert.equal(
-      typeof opts.trim,
-      'string',
-      'opts.trim must be a string'
-    );
-
-    assert(
-      opts.trim.length > 1,
-      'opts.trim must be a string with length above 1'
-    );
-
-    assert.equal(
-      opts.trim[0],
-      '/',
-      'opts.trim must be a valid path with leading slash, e.g "/stuff"'
-    );
-
-    assert.notEqual(
-      opts.trim[opts.trim.length - 1],
-      '/',
-      'opts.trim must not end with a "/"'
-    );
-  }
 
   // Get a logger with the package name and target guid
   var log = require('fh-bunyan')

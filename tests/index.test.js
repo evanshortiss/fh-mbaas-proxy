@@ -56,46 +56,6 @@ test('should throw an assertion error - bad domain', function (t) {
   ' service is hosted on, e.g your-domain');
 });
 
-test('should throw an assertion error - bad trim type', function (t) {
-  t.throws(function () {
-    adapter({
-      guid: GUID,
-      domain: DOMAIN,
-      trim: 123
-    });
-  }, 'opts.trim must be a string');
-});
-
-test('should throw an assertion error - bad trim length', function (t) {
-  t.throws(function () {
-    adapter({
-      guid: GUID,
-      domain: DOMAIN,
-      trim: '/'
-    });
-  }, 'opts.trim must be a string with length above 1');
-});
-
-test('should throw an assertion error - bad trim leading char', function (t) {
-  t.throws(function () {
-    adapter({
-      guid: GUID,
-      domain: DOMAIN,
-      trim: 'test'
-    });
-  }, 'opts.trim must be a valid path with leading slash, e.g "/stuff"');
-});
-
-test('should throw an assertion error - bad trim ending char', function (t) {
-  t.throws(function () {
-    adapter({
-      guid: GUID,
-      domain: DOMAIN,
-      trim: '/test/'
-    });
-  }, 'opts.trim must not end with a "/"');
-});
-
 test('should not throw an error', function (t) {
   t.notThrows(function () {
     adapter({
