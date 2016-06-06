@@ -17,14 +17,14 @@ as if they were part of it. Less time writing calls to _$fh.service_ means more
 time getting features done, and less bugs!
 
 ## Install
-Not published to npm yet, but can be installed via
+
 ```
-npm install evanshortiss/fh-mbaas-proxy --save
+npm install fh-mbaas-proxy --save
 ```
 
 ## Known Issues
 
-### Express. Middleware
+### Express Middleware
 Placing the proxy after certain express middleware can cause the proxied
 request to timeout or receive an ECONNRESET error. Currently it appears that
 placing it after _express.static_ can cause this issue. Other middleware might
