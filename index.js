@@ -66,6 +66,18 @@ module.exports = function (opts) {
     )
   });
 
+  proxy.on('error', function onProxyError (err, req, res) {
+    var eStr = 'failed to proxy request to ' + req.originalUrl;
+
+    log.error(err, eStr);
+
+    res.writeHead(500, {
+      'Content-Type': 'text/plain'
+    });
+
+    res.end(eStr);
+  });
+
   log.info(
     'created proxy to target service %s on domain %s',
     opts.guid,
