@@ -10,10 +10,12 @@ var stubs = {
     getUrl: sinon.stub(),
     getServiceCallHeaders: sinon.stub()
   },
+  'connect-restreamer': sinon.stub().returns(
+    sinon.stub().yields()
+  ),
   'http-proxy': {
-    // Create a default stub, we override it where necessary
     createProxyServer: sinon.stub().returns({
-      on: sinon.spy()
+      web: sinon.spy()
     })
   }
 };
@@ -88,7 +90,8 @@ test.cb('should fail to proxy due to failure getting service url', function (t) 
 
   // Mimic a middleware call
   inst({
-    url: '/auth'
+    url: '/auth',
+    on: sinon.stub().yields()
   }, {}, function (err) {
     t.is(
       err.toString(),
@@ -102,8 +105,7 @@ test.cb('should fail to proxy due to failure getting service url', function (t) 
 
 test.cb('should return the service url and attempt to proxy', function (t) {
   var proxyStub = {
-    web: sinon.spy(),
-    on: sinon.spy()
+    web: sinon.spy()
   };
 
   var targetUrl = 'https://some-url.com';
@@ -117,6 +119,7 @@ test.cb('should return the service url and attempt to proxy', function (t) {
   });
 
   var req = {
+    on: sinon.stub().yields(),
     url: '/path'
   };
 
@@ -135,8 +138,7 @@ test.cb('should return the service url and attempt to proxy', function (t) {
 
 test.cb('should proxy with trimmed url', function (t) {
   var proxyStub = {
-    web: sinon.spy(),
-    on: sinon.spy()
+    web: sinon.spy()
   };
 
   var targetUrl = 'https://some-url.com';
@@ -151,6 +153,7 @@ test.cb('should proxy with trimmed url', function (t) {
   });
 
   var req = {
+    on: sinon.stub().yields(),
     url: '/tostuff',
     originalUrl: '/path/tostuff'
   };
@@ -172,8 +175,7 @@ test.cb('should proxy with trimmed url', function (t) {
 
 test.cb('should proxy with provided url - noTrim match', function (t) {
   var proxyStub = {
-    web: sinon.spy(),
-    on: sinon.spy()
+    web: sinon.spy()
   };
 
   var targetUrl = 'https://some-url.com';
@@ -188,6 +190,7 @@ test.cb('should proxy with provided url - noTrim match', function (t) {
   });
 
   var req = {
+    on: sinon.stub().yields(),
     url: '/tostuff',
     originalUrl: '/path/tostuff',
   };
@@ -203,7 +206,8 @@ test.cb('should proxy with provided url - noTrim match', function (t) {
   t.is(proxyStub.web.getCall(0).args[1], res);
   t.is(proxyStub.web.getCall(0).args[2].target, targetUrl);
   t.is(proxyStub.web.getCall(0).args[2].changeOrigin, true);
-  t.is(proxyStub.on.called, true);
+
+  t.is(proxyStub.web.getCall(0).args[2].changeOrigin, true);
 
   t.end();
 });

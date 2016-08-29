@@ -13,6 +13,7 @@
   "license": "MIT",
   "repository": "evanshortiss/fh-mbaas-proxy",
   "dependencies": {
+    "connect-restreamer": "^1.0.3",
     "env-var": "^1.0.0",
     "fh-bunyan": "^0.1.3",
     "fh-instance-url": "^0.3.0",
