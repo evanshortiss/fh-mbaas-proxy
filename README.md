@@ -155,5 +155,7 @@ http://cloud.fh-app.com/parent/child => http://service.fh-app.com/parent/child
 
 ## Changelog
 
+* 0.1.2 - Patch to fix bug for PUT/POST requests with JSON bodies - uses
+restreamer
 * 0.1.1 - Patch to fix bug for PUT/POST requests with JSON bodies
 * 0.1.0 - Initial release
