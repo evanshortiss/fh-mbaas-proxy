@@ -1,6 +1,6 @@
 {
   "name": "fh-mbaas-proxy",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Creates an express middleware to enable proxying of Cloud calls to an MBaaS Service",
   "main": "index.js",
   "scripts": {
@@ -13,6 +13,7 @@
   "license": "MIT",
   "repository": "evanshortiss/fh-mbaas-proxy",
   "dependencies": {
+    "connect-restreamer": "^1.0.3",
     "env-var": "^1.0.0",
     "fh-bunyan": "^0.1.3",
     "fh-instance-url": "^0.3.0",

@@ -5,7 +5,8 @@ var httpProxy = require('http-proxy')
   , VError = require('verror')
   , xtend = require('xtend')
   , fhurl = require('fh-instance-url')
-  , env = require('env-var');
+  , env = require('env-var')
+  , rs = require('connect-restreamer')();
 
 // 5 minutes is the default URL cache time
 var DEFAULT_CACHE_TIMEOUT = (1000 * 60 * 5);
@@ -64,16 +65,6 @@ module.exports = function (opts) {
       opts.headers || {},
       fhurl.getServiceCallHeaders()
     )
-  });
-
-  // Hack to fix PUT and POST. Might need to find a better solution...
-  // github.com/nodejitsu/node-http-proxy/issues/180#issuecomment-191098037
-  proxy.on('proxyReq', function(proxyReq, req) {
-    if ((req.method === 'POST' || req.method === 'PUT') && req.body) {
-      // TODO: bodies will not always be JSON or an Object!
-      proxyReq.write(JSON.stringify(req.body));
-      proxyReq.end();
-    }
   });
 
   log.info(
@@ -140,66 +131,73 @@ module.exports = function (opts) {
     }
   }
 
+  return function _fhProxyMiddleware (req, res, next) {
 
-  /**
-   * Our middleware function that performs the request proxy
-   * @param  {IncomingRequest}     req
-   * @param  {OutgoingResponse}    res
-   * @param  {Function}            next
-   * @return {undefined}
-   */
-  return function fhMbaasProxyMiddleware (req, res, next) {
-    log.debug('received request for %s', req.url);
-
-    getServiceUrl(function onServiceUrl (err, url) {
-      if (err) {
-        next(
-          new VError(
-            err,
-            'failed to proxy req to service %s on %s',
-            opts.guid,
-            opts.domain
-          )
-        );
-      } else {
-        var originalUrl = req.originalUrl;
-
-        // Trim behaviour uses: req.url, req.originalUrl, req.baseUrl
-        // e.g /things/car
-        // req.url = '/car'
-        // req.originalUrl = '/things/car'
-        // req.baseUrl = '/things'
-
-        if (opts.noTrim === true) {
-          // Use the full URL, e.g /things/car
-          req.url = req.originalUrl;
-        }
-
-        log.debug(
-          'proxying request for %s to %s%s',
-          originalUrl,
-          url,
-          req.url
-        );
-
-        proxy.web(req, res, {
-          target: url,
-          // Required to ensure requests get routed through
-          // fh correctly, otherwise they come back to this service
-          changeOrigin: true
-        }, function onProxyError (err) {
-          var eStr = 'failed to proxy request to ' + req.originalUrl;
-
-          log.error(err, eStr);
-
-          res.writeHead(500, {
-            'Content-Type': 'text/plain'
-          });
-
-          res.end(eStr);
-        });
-      }
+    // Restream the request, this handles issues where express middleware(s)
+    // alter the req object/stream into an ended state
+    rs(req, res, function onRestreamed () {
+      // Restreamer will force this event to be emitted again
+      req.on('end', doFhMbaasProxy);
     });
+
+    /**
+     * Our middleware function that performs the request proxy
+     * @return {undefined}
+     */
+    function doFhMbaasProxy () {
+      log.debug('received request for %s', req.url);
+
+      getServiceUrl(function onServiceUrl (err, url) {
+        if (err) {
+          next(
+            new VError(
+              err,
+              'failed to proxy req to service %s on %s',
+              opts.guid,
+              opts.domain
+            )
+          );
+        } else {
+          var originalUrl = req.originalUrl;
+
+          // Trim behaviour uses: req.url, req.originalUrl, req.baseUrl
+          // e.g /things/car
+          // req.url = '/car'
+          // req.originalUrl = '/things/car'
+          // req.baseUrl = '/things'
+
+          if (opts.noTrim === true) {
+            // Use the full URL, e.g /things/car
+            req.url = req.originalUrl;
+          }
+
+          log.debug(
+            'proxying request for %s to %s%s',
+            originalUrl,
+            url,
+            req.url
+          );
+
+          proxy.web(req, res, {
+            target: url,
+            // Required to ensure requests get routed through
+            // fh correctly, otherwise they come back to this service
+            changeOrigin: true
+          }, function onProxyError (err) {
+            var eStr = 'failed to proxy request to ' + req.originalUrl;
+
+            log.error(err, eStr);
+
+            res.writeHead(500, {
+              'Content-Type': 'text/plain'
+            });
+
+            res.end(eStr);
+          });
+        }
+      });
+    }
   };
+
 
 };
