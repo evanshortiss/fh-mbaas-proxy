@@ -66,6 +66,16 @@ module.exports = function (opts) {
     )
   });
 
+  // Hack to fix PUT and POST. Might need to find a better solution...
+  // https://github.com/nodejitsu/node-http-proxy/issues/180#issuecomment-191098037
+  proxy.on('proxyReq', function(proxyReq, req) {
+    if ((req.method === 'POST' || req.method === 'PUT') && req.body) {
+      // TODO: bodies will not always be JSON or an Object!
+      proxyReq.write(JSON.stringify(req.body));
+      proxyReq.end();
+    }
+  });
+
   log.info(
     'created proxy to target service %s on domain %s',
     opts.guid,
