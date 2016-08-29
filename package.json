@@ -1,6 +1,6 @@
 {
   "name": "fh-mbaas-proxy",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Creates an express middleware to enable proxying of Cloud calls to an MBaaS Service",
   "main": "index.js",
   "scripts": {
@@ -25,7 +25,7 @@
     "ava": "^0.15.1",
     "express": "^4.13.4",
     "jshint": "^2.9.2",
-    "linelint": "^1.0.0",
+    "linelint": "^1.0.1",
     "nyc": "^6.4.4",
     "proxyquire": "^1.7.9",
     "sinon": "^1.17.4",

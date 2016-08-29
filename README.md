@@ -152,3 +152,8 @@ the value, _true_ and the URL mapping will become as follows:
 ```bash
 http://cloud.fh-app.com/parent/child => http://service.fh-app.com/parent/child
 ```
+
+## Changelog
+
+* 0.1.1 - Patch to fix bug for PUT/POST requests with JSON bodies
+* 0.1.0 - Initial release

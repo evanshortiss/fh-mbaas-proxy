@@ -11,7 +11,10 @@ var stubs = {
     getServiceCallHeaders: sinon.stub()
   },
   'http-proxy': {
-    createProxyServer: sinon.stub()
+    // Create a default stub, we override it where necessary
+    createProxyServer: sinon.stub().returns({
+      on: sinon.spy()
+    })
   }
 };
 
@@ -99,7 +102,8 @@ test.cb('should fail to proxy due to failure getting service url', function (t) 
 
 test.cb('should return the service url and attempt to proxy', function (t) {
   var proxyStub = {
-    web: sinon.spy()
+    web: sinon.spy(),
+    on: sinon.spy()
   };
 
   var targetUrl = 'https://some-url.com';
@@ -131,7 +135,8 @@ test.cb('should return the service url and attempt to proxy', function (t) {
 
 test.cb('should proxy with trimmed url', function (t) {
   var proxyStub = {
-    web: sinon.spy()
+    web: sinon.spy(),
+    on: sinon.spy()
   };
 
   var targetUrl = 'https://some-url.com';
@@ -167,7 +172,8 @@ test.cb('should proxy with trimmed url', function (t) {
 
 test.cb('should proxy with provided url - noTrim match', function (t) {
   var proxyStub = {
-    web: sinon.spy()
+    web: sinon.spy(),
+    on: sinon.spy()
   };
 
   var targetUrl = 'https://some-url.com';
@@ -197,6 +203,7 @@ test.cb('should proxy with provided url - noTrim match', function (t) {
   t.is(proxyStub.web.getCall(0).args[1], res);
   t.is(proxyStub.web.getCall(0).args[2].target, targetUrl);
   t.is(proxyStub.web.getCall(0).args[2].changeOrigin, true);
+  t.is(proxyStub.on.called, true);
 
   t.end();
 });
