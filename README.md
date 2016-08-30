@@ -16,11 +16,86 @@ middleware that can be added to any Cloud Application to expose service routes
 as if they were part of it. Less time writing calls to _$fh.service_ means more
 time getting features done, and less bugs!
 
+
 ## Install
 
 ```
 npm install fh-mbaas-proxy --save
 ```
+
+
+## Usage
+
+### Simple Example
+```js
+var serviceProxy = require('fh-mbaas-proxy');
+
+// Creates a middleware instance that will forward all requests to a service
+// specified by the given guid
+var parentProxy = serviceProxy({
+  guid: process.env.SERVICE_GUID,
+  noTrim: false
+});
+
+```
+
+
+### Full Example
+A full RHMAP sample express application.
+
+```js
+var app = require('express')();
+var fh = require('fh-mbaas-api');
+var mbaasExpress = fh.mbaasExpress();
+var serviceProxy = require('fh-mbaas-proxy');
+var port = process.env.FH_PORT || process.env.VCAP_APP_PORT || 8004;
+
+// RHMAP routes and config
+app.use('/sys', mbaasExpress.sys([]));
+app.use('/mbaas', mbaasExpress.mbaas);
+
+
+// Creates a middleware that will forward all requests to a service specified
+// by the SERVICE_GUID environment variable
+var parentProxy = serviceProxy({
+  headers: {
+    'x-custom-header': 'some-header-value'
+  },
+  guid: process.env.SERVICE_GUID,
+  noTrim: false
+});
+
+// Forward all requests that lead with '/parent', e.g '/parent/child'
+app.use('/parent', parentProxy);
+
+app.use(mbaasExpress.fhmiddleware());
+
+app.get('/ping', function (req, res) {
+  res.end('pong');
+});
+
+app.use(mbaasExpress.errorHandler());
+
+app.listen(port, function() {
+  console.log('App started at: ' + new Date() + ' on port: ' + port);
+});
+```
+
+
+## Example
+An example is included in this repo. To run it, open two terminals and *cd* to
+this repository in each. Run _npm install_ in one of the terminals, then, in one
+terminal run _npm run example-service_, and in the other run
+_npm run example-cloud_.
+
+The cloud should now be running on *http://127.0.0.1:8001*, and the service on
+*http://127.0.0.1:8002*. You can make a request through the cloud by hitting
+*http://127.0.0.1:8001/parent/some-path-you-like* which will be served by the
+service.
+
+Try messing with the _noTrim_ boolean in the _example/cloud.js_ to see the
+effect it has on the request made to the service via the cloud!
+
 
 ## Known Issues
 
@@ -66,46 +141,6 @@ app.use(express.static(__dirname + '/public'));
 app.use(require('fh-mbaas-proxy')(proxyOptions));
 ```
 
-## Usage
-
-```js
-var app = require('express')();
-var fh = require('fh-mbaas-api');
-var mbaasExpress = fh.mbaasExpress();
-var serviceProxy = require('fh-mbaas-proxy');
-var port = process.env.FH_PORT || process.env.VCAP_APP_PORT || 8004;
-
-// RHMAP routes and config
-app.use('/sys', mbaasExpress.sys([]));
-app.use('/mbaas', mbaasExpress.mbaas);
-
-
-// Creates a middleware that will forward all requests to a service specified
-// by the AUTH_SERVICE_GUID environment variable
-var parentProxy = serviceProxy({
-  headers: {
-    'x-custom-header': 'some-header-value'
-  },
-  guid: process.env.SERVICE_GUID,
-  domain: 'somedomain.feedhenry.com',
-  noTrim: false
-});
-
-// Forward all requests that lead with '/parent', e.g '/parent/child'
-app.use('/parent', parentProxy);
-
-app.use(mbaasExpress.fhmiddleware());
-
-app.get('/ping', function (req, res) {
-  res.end('pong');
-});
-
-app.use(mbaasExpress.errorHandler());
-
-app.listen(port, function() {
-  console.log('App started at: ' + new Date() + ' on port: ' + port);
-});
-```
 
 ## Options
 
@@ -121,16 +156,11 @@ the _guid_ parameter you would pass to _$fh.service_ calls.
 
 ### opts.domain (Optional)
 The domain that the target MBaaS Service is hosted on, e.g
-your-domain.feedhenry.com. When running locally you _must_ set this, but when
-running on RHMAP, this is set for you via the FH_MILLICORE environment
-variable.
+your-domain.feedhenry.com.
 
-During local development you could set FH_MILLICORE by running the following
-command in a terminal, thus removing the need to provide this option. Awesome!
-
-```
-export FH_MILLICORE='your-domain.feedhenry.com'
-```
+You only need to set this if you don't have an
+*fhconfig.json* in the root of you project. You can read about the
+*fhconfig.json* [here](https://github.com/feedhenry-staff/fh-instance-url#fhconfigjson).
 
 ### opts.noTrim (Default - false)
 Setting _noTrim_ to true will use the full path for proxying, e.g if your proxy
@@ -154,8 +184,10 @@ the value, _true_ and the URL mapping will become as follows:
 http://cloud.fh-app.com/parent/child => http://service.fh-app.com/parent/child
 ```
 
-## Changelog
 
+## CHANGELOG
+
+* 0.2.0 - Update to support _fhconfig.json_ for configuration. Improve docs.
 * 0.1.3 - Remove 0.1.2 fixes since they are not working as expected
 * 0.1.2 - Patch to fix bug for PUT/POST requests with JSON bodies - uses
 restreamer

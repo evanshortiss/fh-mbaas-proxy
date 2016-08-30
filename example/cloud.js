@@ -3,18 +3,14 @@
 var app = require('express')();
 var port = 8001;
 
-// Local development override for guid
-process.env.FH_SERVICE_MAP = JSON.stringify({
-  fakeServiceGuid: 'http://127.0.0.1:8002'
-});
+process.env.FH_USE_LOCAL_DB = 'true';
 
 app.use(function (req, res, next) {
   console.log('got req for %s', req.url);
   next();
 });
 app.use('/parent', require('../index.js')({
-  guid: 'fakeServiceGuid',
-  domain: 'your-domain.feedhenry.com',
+  guid: '48fhsf6mxzlyqi3ffbpkfh38',
   noTrim: true
 }));
 

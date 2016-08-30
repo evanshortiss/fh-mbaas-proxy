@@ -5,7 +5,7 @@ var port = 8002;
 
 
 app.use('/*', function (req, res) {
-  console.log('received request for %s', req.originalUrl)
+  console.log('received request for %s', req.originalUrl);
   res.end('served url ' + req.originalUrl + ' successfully!');
 });
 

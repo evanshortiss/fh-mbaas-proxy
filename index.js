@@ -4,8 +4,7 @@ var httpProxy = require('http-proxy')
   , assert = require('assert')
   , VError = require('verror')
   , xtend = require('xtend')
-  , fhurl = require('fh-instance-url')
-  , env = require('env-var');
+  , fhurl = require('fh-instance-url');
 
 // 5 minutes is the default URL cache time
 var DEFAULT_CACHE_TIMEOUT = (1000 * 60 * 5);
@@ -33,24 +32,6 @@ module.exports = function (opts) {
     'opts.guid is a required parameter and should be the service guid/id'
   );
 
-  // Need to know the domain the request is made to. RHMAP has a variable
-  // present for this, but allow override if necessary
-  opts.domain = opts.domain || env('FH_MILLICORE');
-
-  // Cannot be empty string/falsey value
-  assert(
-    opts.domain,
-    'opts.domain or FH_MILLICORE env var must be set to the domain your ' +
-    'service is hosted on, e.g your-domain'
-  );
-
-  assert.equal(
-    typeof opts.domain,
-    'string',
-    'opts.domain or FH_MILLICORE env var must be a string'
-  );
-
-
   // Get a logger with the package name and target guid
   var log = require('fh-bunyan')
     .getLogger(require('./package.json').name + '-' + opts.guid);
@@ -66,11 +47,7 @@ module.exports = function (opts) {
     )
   });
 
-  log.info(
-    'created proxy to target service %s on domain %s',
-    opts.guid,
-    opts.domain
-  );
+  log.info('created proxy to target service %s', opts.guid);
 
   /**
    * Store the service url in a local var and set a timer to invalidate it.
@@ -103,11 +80,7 @@ module.exports = function (opts) {
     if (serviceUrl) {
       callback(null, serviceUrl);
     } else {
-      log.info(
-        'requesting service url for %s on domain %s',
-        opts.guid,
-        opts.domain
-      );
+      log.info('requesting service url for %s on domain %s', opts.guid);
 
       fhurl.getUrl({
         guid: opts.guid,
@@ -119,11 +92,7 @@ module.exports = function (opts) {
             null
           );
         } else {
-          log.info(
-            'successfully retrieved url for %s on %s',
-            opts.guid,
-            opts.domain
-          );
+          log.info('successfully retrieved url for %s on %s', opts.guid);
           cacheServiceUrl(url, callback);
         }
       });
@@ -136,12 +105,7 @@ module.exports = function (opts) {
     getServiceUrl(function onServiceUrl (err, url) {
       if (err) {
         next(
-          new VError(
-            err,
-            'failed to proxy req to service %s on %s',
-            opts.guid,
-            opts.domain
-          )
+          new VError(err, 'failed to proxy req to service %s', opts.guid)
         );
       } else {
         var originalUrl = req.originalUrl;

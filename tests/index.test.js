@@ -41,26 +41,6 @@ test('should throw an assertion error - bad guid', function (t) {
   }, 'opts.guid is a required parameter and should be the service guid/id');
 });
 
-test('should throw an assertion error - bad domain', function (t) {
-  t.throws(function () {
-    adapter({
-      guid: GUID,
-      domain: 12
-    });
-  }, 'opts.domain or FH_MILLICORE env var must be a string');
-});
-
-test('should throw an assertion error - bad domain', function (t) {
-  stubs['env-var'].returns('');
-
-  t.throws(function () {
-    adapter({
-      guid: GUID
-    });
-  }, 'opts.domain or FH_MILLICORE env var must be set to the domain your' +
-  ' service is hosted on, e.g your-domain');
-});
-
 test('should not throw an error', function (t) {
   t.notThrows(function () {
     adapter({
@@ -95,8 +75,8 @@ test.cb('should fail to proxy due to failure getting service url', function (t) 
   }, {}, function (err) {
     t.is(
       err.toString(),
-      'VError: failed to proxy req to service 562etdecvqqgskbngvfdrj2kn on ' +
-      'some.domain.com: failed to get service url: dummy error'
+      'VError: failed to proxy req to service 562etdecvqqgskbngvfdrj2kn: ' +
+      'failed to get service url: dummy error'
     );
 
     t.end();

@@ -1,0 +1,11 @@
+{
+  "domain": "your-domain.feedhenry.com",
+  "appId": "the id of this app from the app details screen",
+  "apiKey": "the api key from the app details screen",
+  "services": {
+    "48fhsf6mxzlyqi3ffbpkfh38": {
+      "devUrl": "http://127.0.0.1:8002/",
+      "name": "MY_AUTH_SERVICE"
+    }
+  }
+}
