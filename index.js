@@ -5,8 +5,7 @@ var httpProxy = require('http-proxy')
   , VError = require('verror')
   , xtend = require('xtend')
   , fhurl = require('fh-instance-url')
-  , env = require('env-var')
-  , rs = require('connect-restreamer')();
+  , env = require('env-var');
 
 // 5 minutes is the default URL cache time
 var DEFAULT_CACHE_TIMEOUT = (1000 * 60 * 5);
@@ -132,71 +131,57 @@ module.exports = function (opts) {
   }
 
   return function _fhProxyMiddleware (req, res, next) {
+    log.debug('received request for %s', req.url);
 
-    // Restream the request, this handles issues where express middleware(s)
-    // alter the req object/stream into an ended state
-    rs(req, res, function onRestreamed () {
-      // Restreamer will force this event to be emitted again
-      req.on('end', doFhMbaasProxy);
-    });
+    getServiceUrl(function onServiceUrl (err, url) {
+      if (err) {
+        next(
+          new VError(
+            err,
+            'failed to proxy req to service %s on %s',
+            opts.guid,
+            opts.domain
+          )
+        );
+      } else {
+        var originalUrl = req.originalUrl;
 
-    /**
-     * Our middleware function that performs the request proxy
-     * @return {undefined}
-     */
-    function doFhMbaasProxy () {
-      log.debug('received request for %s', req.url);
+        // Trim behaviour uses: req.url, req.originalUrl, req.baseUrl
+        // e.g /things/car
+        // req.url = '/car'
+        // req.originalUrl = '/things/car'
+        // req.baseUrl = '/things'
 
-      getServiceUrl(function onServiceUrl (err, url) {
-        if (err) {
-          next(
-            new VError(
-              err,
-              'failed to proxy req to service %s on %s',
-              opts.guid,
-              opts.domain
-            )
-          );
-        } else {
-          var originalUrl = req.originalUrl;
-
-          // Trim behaviour uses: req.url, req.originalUrl, req.baseUrl
-          // e.g /things/car
-          // req.url = '/car'
-          // req.originalUrl = '/things/car'
-          // req.baseUrl = '/things'
-
-          if (opts.noTrim === true) {
-            // Use the full URL, e.g /things/car
-            req.url = req.originalUrl;
-          }
-
-          log.debug(
-            'proxying request for %s to %s%s',
-            originalUrl,
-            url,
-            req.url
-          );
-
-          proxy.web(req, res, {
-            target: url,
-            // Required to ensure requests get routed through
-            // fh correctly, otherwise they come back to this service
-            changeOrigin: true
-          }, function onProxyError (err) {
-            var eStr = 'failed to proxy request to ' + req.originalUrl;
-
-            log.error(err, eStr);
-
-            res.writeHead(500, {
-              'Content-Type': 'text/plain'
-            });
-
-            res.end(eStr);
-          });
+        if (opts.noTrim === true) {
+          // Use the full URL, e.g /things/car
+          req.url = req.originalUrl;
         }
-      });
-    }
+
+        log.debug(
+          'proxying request for %s to %s%s',
+          originalUrl,
+          url,
+          req.url
+        );
+
+        proxy.web(req, res, {
+          target: url,
+          // Required to ensure requests get routed through
+          // fh correctly, otherwise they come back to this service
+          changeOrigin: true
+        }, function onProxyError (err) {
+          var eStr = 'failed to proxy request to ' + req.originalUrl;
+
+          log.error(err, eStr);
+
+          res.writeHead(500, {
+            'Content-Type': 'text/plain'
+          });
+
+          res.end(eStr);
+        });
+      }
+    });
   };
 
 

@@ -10,9 +10,6 @@ var stubs = {
     getUrl: sinon.stub(),
     getServiceCallHeaders: sinon.stub()
   },
-  'connect-restreamer': sinon.stub().returns(
-    sinon.stub().yields()
-  ),
   'http-proxy': {
     createProxyServer: sinon.stub().returns({
       web: sinon.spy()
