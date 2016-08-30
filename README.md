@@ -26,19 +26,20 @@ npm install fh-mbaas-proxy --save
 
 ### Express Middleware
 Placing the proxy after certain express middleware can cause the proxied
-request to timeout or receive an ECONNRESET error. Currently it appears that
-placing it after _express.static_ can cause this issue. Other middleware might
-also cause this issue, but only _express.static_ is confirmed.
+request to timeout or receive an ECONNRESET error, or the request can simply
+hang to eventually timeout. It appears to be related to this [issue](https://github.com/nodejitsu/node-http-proxy/issues/180).
 
 You can work around this by structuring routes with nesting, or by ensuring
-the proxy is included before such middleware until the reason for this issue
-is discovered.
+the proxy is included before such middleware until a fix is implemented. The
+easiest fix is to place the proxy before all other routes if possible since
+it's been observed that POST/PUT will generally fail if any middleware is
+triggered/matched before hitting the proxy middleware.
 
 ```js
 /*
   filename: this-works.js
 
-  This will proxy since the proxy middleware is before the static middleware.
+  This will work since the proxy middleware is before the static middleware.
  */
 app.use(require('fh-mbaas-proxy')(proxyOptions));
 app.use(express.static(__dirname + '/public'));
@@ -155,6 +156,7 @@ http://cloud.fh-app.com/parent/child => http://service.fh-app.com/parent/child
 
 ## Changelog
 
+* 0.1.3 - Remove 0.1.2 fixes since they are not working as expected
 * 0.1.2 - Patch to fix bug for PUT/POST requests with JSON bodies - uses
 restreamer
 * 0.1.1 - Patch to fix bug for PUT/POST requests with JSON bodies
