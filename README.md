@@ -187,6 +187,7 @@ http://cloud.fh-app.com/parent/child => http://service.fh-app.com/parent/child
 
 ## CHANGELOG
 
+* 0.2.1 - Fix excessive info level logs
 * 0.2.0 - Update to support _fhconfig.json_ for configuration. Improve docs.
 * 0.1.3 - Remove 0.1.2 fixes since they are not working as expected
 * 0.1.2 - Patch to fix bug for PUT/POST requests with JSON bodies - uses

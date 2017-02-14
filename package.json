@@ -1,6 +1,6 @@
 {
   "name": "fh-mbaas-proxy",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Creates an express middleware to enable proxying of Cloud calls to an MBaaS Service",
   "main": "index.js",
   "files": ["index.js"],

@@ -58,7 +58,7 @@ module.exports = function (opts) {
   function cacheServiceUrl (url, callback) {
     var cacheMs = opts.urlCacheTimeout || DEFAULT_CACHE_TIMEOUT;
 
-    log.info('caching url %s for %sms', url, cacheMs);
+    log.debug('caching url %s for %sms', url, cacheMs);
 
     serviceUrl = url;
 
@@ -80,7 +80,7 @@ module.exports = function (opts) {
     if (serviceUrl) {
       callback(null, serviceUrl);
     } else {
-      log.info('requesting service url for %s on domain %s', opts.guid);
+      log.debug('requesting service url for %s on domain %s', opts.guid);
 
       fhurl.getUrl({
         guid: opts.guid,
@@ -92,7 +92,7 @@ module.exports = function (opts) {
             null
           );
         } else {
-          log.info('successfully retrieved url for %s on %s', opts.guid);
+          log.debug('successfully retrieved url for %s on %s', opts.guid);
           cacheServiceUrl(url, callback);
         }
       });
