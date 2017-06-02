@@ -28,11 +28,11 @@ npm install fh-mbaas-proxy --save
 
 ### Simple Example
 ```js
-var serviceProxy = require('fh-mbaas-proxy');
+const serviceProxy = require('fh-mbaas-proxy');
 
 // Creates a middleware instance that will forward all requests to a service
 // specified by the given guid
-var parentProxy = serviceProxy({
+const proxyMiddleware = serviceProxy({
   guid: process.env.SERVICE_GUID,
   noTrim: false
 });
@@ -187,6 +187,7 @@ http://cloud.fh-app.com/parent/child => http://service.fh-app.com/parent/child
 
 ## CHANGELOG
 
+* 1.0.0 - Support only node.js versions above 4.4.2. Use `debug` for logging.
 * 0.2.1 - Fix excessive info level logs
 * 0.2.0 - Update to support _fhconfig.json_ for configuration. Improve docs.
 * 0.1.3 - Remove 0.1.2 fixes since they are not working as expected

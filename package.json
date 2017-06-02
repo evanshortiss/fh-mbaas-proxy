@@ -1,13 +1,15 @@
 {
   "name": "fh-mbaas-proxy",
-  "version": "0.2.1",
+  "version": "1.0.0",
   "description": "Creates an express middleware to enable proxying of Cloud calls to an MBaaS Service",
   "main": "index.js",
-  "files": ["index.js"],
+  "files": [
+    "index.js"
+  ],
   "scripts": {
     "unit": "env NODE_PATH=. ava tests/",
     "report": "nyc npm run unit && nyc report --reporter=html",
-    "lint": "linelint index.js && jshint index.js",
+    "lint": "linelint index.js && eslint index.js",
     "test": "npm run lint && npm run unit",
     "example-service": "node example/service.js",
     "example-cloud": "node example/cloud.js"
@@ -16,21 +18,23 @@
   "license": "MIT",
   "repository": "evanshortiss/fh-mbaas-proxy",
   "dependencies": {
-    "fh-bunyan": "~0.1.3",
+    "debug": "~2.6.8",
     "fh-instance-url": "~1.1.1",
     "http-proxy": "~1.8.1",
-    "lodash.get": "~4.2.1",
     "verror": "~1.6.1",
     "xtend": "~4.0.1"
   },
   "devDependencies": {
     "ava": "~0.15.1",
+    "eslint": "~3.19.0",
     "express": "~4.13.4",
-    "jshint": "~2.9.2",
     "linelint": "~1.0.1",
     "nyc": "~6.4.4",
     "proxyquire": "~1.7.9",
     "sinon": "~1.17.4",
     "supertest": "~1.2.0"
+  },
+  "engines": {
+    "node": ">=4.4.2"
   }
 }

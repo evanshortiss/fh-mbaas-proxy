@@ -1,13 +1,14 @@
 'use strict';
 
-var httpProxy = require('http-proxy')
-  , assert = require('assert')
-  , VError = require('verror')
-  , xtend = require('xtend')
-  , fhurl = require('fh-instance-url');
+const httpProxy = require('http-proxy');
+const assert = require('assert');
+const VError = require('verror');
+const xtend = require('xtend');
+const fhurl = require('fh-instance-url');
+const pkg = require('./package.json');
 
-// 5 minutes is the default URL cache time
-var DEFAULT_CACHE_TIMEOUT = (1000 * 60 * 5);
+// 30 minutes is the default URL cache time
+const DEFAULT_CACHE_TIMEOUT = 1000 * 60 * 30;
 
 
 /**
@@ -33,12 +34,11 @@ module.exports = function (opts) {
   );
 
   // Get a logger with the package name and target guid
-  var log = require('fh-bunyan')
-    .getLogger(require('./package.json').name + '-' + opts.guid);
+  const log = require('debug')(pkg.name + '-' + opts.guid);
 
-  log.info('creating proxy with opts, %j', opts);
+  log('creating proxy with opts, %j', opts);
 
-  var proxy = httpProxy.createProxyServer({
+  const proxy = httpProxy.createProxyServer({
     // We need to add in service call headers to ensure the request is not
     // rejected. We also add in custom headers if the dev would like to
     headers: xtend(
@@ -47,7 +47,7 @@ module.exports = function (opts) {
     )
   });
 
-  log.info('created proxy to target service %s', opts.guid);
+  log('created proxy to target service %s', opts.guid);
 
   /**
    * Store the service url in a local var and set a timer to invalidate it.
@@ -56,14 +56,14 @@ module.exports = function (opts) {
    * @return {undefined}
    */
   function cacheServiceUrl (url, callback) {
-    var cacheMs = opts.urlCacheTimeout || DEFAULT_CACHE_TIMEOUT;
+    const cacheMs = opts.urlCacheTimeout || DEFAULT_CACHE_TIMEOUT;
 
-    log.debug('caching url %s for %sms', url, cacheMs);
+    log('caching url %s for %sms', url, cacheMs);
 
     serviceUrl = url;
 
     setTimeout(function invalidateCachedUrl () {
-      log.info('url %s cache expired', serviceUrl);
+      log('url %s cache expired', serviceUrl);
       serviceUrl = null;
     }, cacheMs);
 
@@ -80,7 +80,7 @@ module.exports = function (opts) {
     if (serviceUrl) {
       callback(null, serviceUrl);
     } else {
-      log.debug('requesting service url for %s on domain %s', opts.guid);
+      log('requesting service url for %s on domain %s', opts.guid);
 
       fhurl.getUrl({
         guid: opts.guid,
@@ -92,7 +92,7 @@ module.exports = function (opts) {
             null
           );
         } else {
-          log.debug('successfully retrieved url for %s on %s', opts.guid);
+          log('successfully retrieved url for %s on %s', opts.guid);
           cacheServiceUrl(url, callback);
         }
       });
@@ -100,7 +100,7 @@ module.exports = function (opts) {
   }
 
   return function _fhProxyMiddleware (req, res, next) {
-    log.debug('received request for %s', req.url);
+    log('received request for %s', req.url);
 
     getServiceUrl(function onServiceUrl (err, url) {
       if (err) {
@@ -108,7 +108,7 @@ module.exports = function (opts) {
           new VError(err, 'failed to proxy req to service %s', opts.guid)
         );
       } else {
-        var originalUrl = req.originalUrl;
+        const originalUrl = req.originalUrl;
 
         // Trim behaviour uses: req.url, req.originalUrl, req.baseUrl
         // e.g /things/car
@@ -116,17 +116,12 @@ module.exports = function (opts) {
         // req.originalUrl = '/things/car'
         // req.baseUrl = '/things'
 
-        if (opts.noTrim === true) {
+        if (opts.noTrim) {
           // Use the full URL, e.g /things/car
           req.url = req.originalUrl;
         }
 
-        log.debug(
-          'proxying request for %s to %s%s',
-          originalUrl,
-          url,
-          req.url
-        );
+        log('proxying request for %s to %s%s', originalUrl, url, req.url);
 
         proxy.web(req, res, {
           target: url,
@@ -134,9 +129,10 @@ module.exports = function (opts) {
           // fh correctly, otherwise they come back to this service
           changeOrigin: true
         }, function onProxyError (err) {
-          var eStr = 'failed to proxy request to ' + req.originalUrl;
+          const eStr = 'failed to proxy request to ' + req.originalUrl;
 
-          log.error(err, eStr);
+          log(eStr);
+          log(err);
 
           res.writeHead(500, {
             'Content-Type': 'text/plain'
@@ -147,6 +143,5 @@ module.exports = function (opts) {
       }
     });
   };
-
 
 };
